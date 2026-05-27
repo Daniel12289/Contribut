@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>SmartContribute • Fast & Secure</title>
+  
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://www.gstatic.com">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'slide-up': 'slideUp 0.3s ease-out',
+            'fade-in': 'fadeIn 0.2s ease-out',
+            'pulse-soft': 'pulseSoft 2s infinite',
+            'shimmer': 'shimmer 1.5s infinite',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { 
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: #f8fafc;
+      overscroll-behavior: none;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes pulseSoft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    
+    .animate-slide-up { animation: slideUp 0.3s ease-out; }
+    .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+    
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 12px;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .btn-press:active {
+      transform: scale(0.96);
+      transition: transform 0.1s;
+    }
+    
+    .nav-blur {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .card-hover {
+      transition: all 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    input, button, textarea, select { font-size: 16px; }
+    
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    
+    .toast-enter { animation: slideUp 0.3s ease-out; }
+    
+    .ripple {
+      position: relative;
+      overflow: hidden;
+    }
+    .ripple:after {
+      content: "";
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+      background-repeat: no-repeat;
+      background-position: 50%;
+      transform: scale(10,10);
+      opacity: 0;
+      transition: transform .5s, opacity 1s;
+    }
+    .ripple:active:after {
+      transform: scale(0,0);
+      opacity: .3;
+      transition: 0s;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- FAST LOADER -->
+  <div id="appLoader" class="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+    <div class="text-center">
+      <div class="w-16 h-16 mx-auto mb-4 relative">
+        <div class="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-transparent border-t-indigo-600 rounded-full animate-spin"></div>
+        <i class="fas fa-bolt absolute inset-0 flex items-center justify-center text-indigo-600 text-xl"></i>
+      </div>
+      <p class="text-slate-600 font-medium">Loading SmartContribute...</p>
+    </div>
+  </div>
+
+  <!-- SKELETON LOADER -->
+  <div id="skeletonLoader" class="hidden max-w-lg mx-auto p-4 pt-20">
+    <div class="skeleton h-48 mb-4"></div>
+    <div class="grid grid-cols-3 gap-3 mb-4">
+      <div class="skeleton h-20"></div>
+      <div class="skeleton h-20"></div>
+      <div class="skeleton h-20"></div>
+    </div>
+    <div class="skeleton h-64"></div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp" class="hidden">
+
+    <!-- TOP NAV -->
+    <nav id="topNav" class="hidden fixed top-0 left-0 right-0 z-50 nav-blur border-b border-slate-200/50">
+      <div class="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-bolt text-white text-sm"></i>
+          </div>
+          <span class="font-bold text-lg gradient-text">SmartContribute</span>
+        </div>
+        
+        <div class="hidden sm:flex items-center gap-3">
+          <button onclick="navigate('dashboard')" class="nav-btn text-slate-600 hover:text-indigo-600 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition">Dashboard</button>
+          <button onclick="navigate('history')" class="nav-btn text-slate-600 hover:text-indigo-600 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition">History</button>
+          <button onclick="navigate('admin')" class="admin-nav hidden text-slate-600 hover:text-indigo-600 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition">Admin</button>
+          <button onclick="navigate('receipts')" class="admin-nav hidden text-slate-600 hover:text-indigo-600 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition">Receipts</button>
+          <span id="userBadge" class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full text-xs font-medium truncate max-w-[100px]"></span>
+          <button onclick="handleLogout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-medium transition">Logout</button>
+        </div>
+        
+        <button onclick="toggleMobileMenu()" class="sm:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+          <i class="fas fa-bars text-lg"></i>
+        </button>
+      </div>
+      
+      <!-- Mobile Menu -->
+      <div id="mobileMenu" class="hidden sm:hidden bg-white border-t px-4 py-3 space-y-1">
+        <button onclick="navigate('dashboard');toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm font-medium"><i class="fas fa-chart-line w-6 text-indigo-500"></i> Dashboard</button>
+        <button onclick="navigate('history');toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm font-medium"><i class="fas fa-clock w-6 text-indigo-500"></i> History</button>
+        <button onclick="navigate('admin');toggleMobileMenu()" class="admin-nav hidden w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm font-medium"><i class="fas fa-shield w-6 text-indigo-500"></i> Admin Panel</button>
+        <button onclick="navigate('receipts');toggleMobileMenu()" class="admin-nav hidden w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-50 text-sm font-medium"><i class="fas fa-images w-6 text-indigo-500"></i> Receipts</button>
+        <hr class="my-2">
+        <button onclick="handleLogout();toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-red-50 text-sm font-medium text-red-600"><i class="fas fa-sign-out-alt w-6"></i> Logout</button>
+      </div>
+    </nav>
+
+    <!-- BOTTOM NAV (Mobile) -->
+    <div id="bottomNav" class="hidden sm:hidden fixed bottom-0 left-0 right-0 z-50 nav-blur border-t border-slate-200/50">
+      <div class="flex justify-around h-16">
+        <button onclick="navigate('dashboard')" class="flex flex-col items-center justify-center w-full text-indigo-600 bottom-tab">
+          <i class="fas fa-home text-lg"></i><span class="text-[10px] font-medium mt-0.5">Home</span>
+        </button>
+        <button onclick="navigate('history')" class="flex flex-col items-center justify-center w-full text-slate-400 bottom-tab">
+          <i class="fas fa-clock text-lg"></i><span class="text-[10px] font-medium mt-0.5">History</span>
+        </button>
+        <button onclick="navigate('admin')" class="admin-nav hidden flex-col items-center justify-center w-full text-slate-400 bottom-tab">
+          <i class="fas fa-shield text-lg"></i><span class="text-[10px] font-medium mt-0.5">Admin</span>
+        </button>
+        <button onclick="navigate('receipts')" class="admin-nav hidden flex-col items-center justify-center w-full text-slate-400 bottom-tab">
+          <i class="fas fa-images text-lg"></i><span class="text-[10px] font-medium mt-0.5">Receipts</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEWS CONTAINER -->
+    <div id="viewContainer" class="pt-14 sm:pt-16 pb-20 sm:pb-8 max-w-lg mx-auto px-4">
+      
+      <!-- LOGIN VIEW -->
+      <div id="loginView" class="animate-fade-in">
+        <div class="min-h-[80vh] flex flex-col justify-center">
+          <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
+              <i class="fas fa-bolt text-3xl text-white"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold gradient-text">SmartContribute</h1>
+            <p class="text-slate-500 mt-2">Fast & Secure Contributions</p>
+          </div>
+          
+          <div class="glass-card rounded-2xl p-6 shadow-xl">
+            <h2 class="text-lg font-bold mb-4">Welcome Back</h2>
+            <form id="loginForm" class="space-y-3">
+              <div>
+                <label class="text-xs font-semibold text-slate-600 mb-1 block">Email</label>
+                <div class="relative">
+                  <i class="fas fa-envelope absolute left-3 top-3 text-slate-400 text-sm"></i>
+                  <input type="email" id="loginEmail" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" placeholder="you@email.com">
+                </div>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-600 mb-1 block">Password</label>
+                <div class="relative">
+                  <i class="fas fa-lock absolute left-3 top-3 text-slate-400 text-sm"></i>
+                  <input type="password" id="loginPassword" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" placeholder="••••••">
+                </div>
+              </div>
+              <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold btn-press shadow-lg shadow-indigo-200 ripple">
+                <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+              </button>
+            </form>
+            <p class="text-center mt-4 text-sm text-slate-500">
+              New here? <button onclick="showView('register')" class="text-indigo-600 font-semibold hover:underline">Create Account</button>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- REGISTER VIEW -->
+      <div id="registerView" class="hidden animate-fade-in">
+        <div class="min-h-[80vh] flex flex-col justify-center">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-200">
+              <i class="fas fa-user-plus text-2xl text-white"></i>
+            </div>
+            <h1 class="text-xl font-extrabold text-slate-800">Join SmartContribute</h1>
+            <p class="text-slate-500 text-sm mt-1">Start contributing in seconds</p>
+          </div>
+          
+          <div class="glass-card rounded-2xl p-6 shadow-xl">
+            <form id="registerForm" class="space-y-2.5">
+              <input id="regName" placeholder="Full Name" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <input id="regPhone" type="tel" placeholder="Phone Number" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <input id="regEmail" type="email" placeholder="Email Address" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <input id="regPassword" type="password" placeholder="Password (min 6 chars)" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <input id="regConfirm" type="password" placeholder="Confirm Password" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold btn-press shadow-lg shadow-emerald-200 ripple mt-2">
+                <i class="fas fa-check-circle mr-2"></i>Create Account
+              </button>
+            </form>
+            <p class="text-center mt-3 text-sm text-slate-500">
+              <button onclick="showView('login')" class="text-indigo-600 font-semibold hover:underline">← Back to Login</button>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD VIEW -->
+      <div id="dashboardView" class="hidden animate-slide-up space-y-4">
+        <!-- Profile Card -->
+        <div class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-5 text-white shadow-xl shadow-indigo-200">
+          <div class="flex items-center gap-4 mb-3">
+            <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur">
+              <i class="fas fa-user-circle text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h2 id="dashName" class="font-bold text-lg">User</h2>
+              <p id="dashPhoneNum" class="text-indigo-200 text-xs"></p>
+            </div>
+            <div class="bg-white/20 rounded-xl px-3 py-2 text-center backdrop-blur">
+              <p class="text-[10px] text-indigo-200">RANK</p>
+              <p id="dashRank" class="font-bold text-xl">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-white rounded-xl p-3 shadow-sm card-hover">
+            <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Balance</p>
+            <p id="dashBalance" class="font-bold text-lg text-emerald-600 mt-0.5">₦0</p>
+          </div>
+          <div class="bg-white rounded-xl p-3 shadow-sm card-hover">
+            <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Contribs</p>
+            <p id="dashContribs" class="font-bold text-lg text-indigo-600 mt-0.5">0</p>
+          </div>
+          <div class="bg-white rounded-xl p-3 shadow-sm card-hover">
+            <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Rank</p>
+            <p id="dashRankSmall" class="font-bold text-lg text-purple-600 mt-0.5">-</p>
+          </div>
+        </div>
+
+        <!-- Setup Admin (hidden for admins) -->
+        <button id="setupAdminBtn" onclick="makeMeAdmin()" class="hidden w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2.5 rounded-xl font-semibold btn-press shadow-lg shadow-amber-200 text-sm">
+          <i class="fas fa-crown mr-2"></i>Setup Admin Access
+        </button>
+
+        <!-- Bank Details -->
+        <div class="bg-slate-800 rounded-2xl p-4 text-white">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fas fa-university text-indigo-400"></i>
+            <span class="font-semibold text-sm">Bank Transfer Details</span>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center bg-white/10 rounded-lg px-3 py-2">
+              <span class="text-sm font-mono font-bold">9115858045</span>
+              <button onclick="copyText('9115858045')" class="text-xs bg-white/20 px-2 py-1 rounded-lg hover:bg-white/30 transition">Copy</button>
+            </div>
+            <div class="flex justify-between items-center bg-white/10 rounded-lg px-3 py-2">
+              <span class="text-sm">OPay • Daniel Olamide</span>
+              <button onclick="copyText('Daniel Olamide')" class="text-xs bg-white/20 px-2 py-1 rounded-lg hover:bg-white/30 transition">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contribution Form -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <h3 class="font-bold mb-3 flex items-center gap-2">
+            <i class="fas fa-paper-plane text-indigo-600"></i>Submit Contribution
+          </h3>
+          <form id="contribForm" class="space-y-3">
+            <input id="contribName" placeholder="Your Name" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition">
+            <input id="contribPhone" placeholder="Phone Number" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition">
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-slate-500 font-bold">₦</span>
+              <input id="contribAmount" type="number" placeholder="Amount" required class="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition">
+            </div>
+            <label class="block border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50 hover:bg-indigo-50">
+              <input type="file" id="contribReceipt" accept="image/*" class="hidden">
+              <i class="fas fa-cloud-upload-alt text-3xl text-slate-400 mb-2"></i>
+              <p class="text-sm text-slate-600 font-medium">Upload Receipt</p>
+              <p class="text-xs text-slate-400 mt-1">Tap to select image</p>
+            </label>
+            <img id="receiptPreview" class="hidden w-full rounded-xl max-h-40 object-cover" alt="Preview">
+            <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold btn-press shadow-lg shadow-indigo-200 ripple">
+              <i class="fas fa-paper-plane mr-2"></i>Submit Contribution
+            </button>
+          </form>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <h3 class="font-bold mb-3 flex items-center gap-2">
+            <i class="fas fa-trophy text-yellow-500"></i>Leaderboard
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead><tr class="text-slate-500 text-xs uppercase tracking-wider border-b"><th class="py-2 text-left">#</th><th class="py-2 text-left">User</th><th class="py-2 text-right">Balance</th><th class="py-2 text-right">Cnt</th></tr></thead>
+              <tbody id="leaderboardBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY VIEW -->
+      <div id="historyView" class="hidden animate-slide-up">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-history text-indigo-600 mr-2"></i>My History</h2>
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 border-b"><tr><th class="py-2 px-2 text-left text-xs uppercase text-slate-500">Date</th><th class="py-2 px-2 text-left text-xs uppercase text-slate-500">Name</th><th class="py-2 px-2 text-right text-xs uppercase text-slate-500">Amount</th><th class="py-2 px-2 text-center text-xs uppercase text-slate-500">Status</th><th class="py-2 px-2 text-center text-xs uppercase text-slate-500">View</th></tr></thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADMIN VIEW -->
+      <div id="adminView" class="hidden animate-slide-up">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold"><i class="fas fa-shield text-indigo-600 mr-2"></i>Admin Panel</h2>
+          <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold">⏳ <span id="pendingBadge">0</span></span>
+        </div>
+        <div class="bg-indigo-50 rounded-xl p-3 mb-4 text-xs text-indigo-700">
+          <i class="fas fa-key mr-1"></i> Secret: <code class="font-bold">data.simi1</code>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 border-b"><tr><th class="py-2 px-2 text-left">Date</th><th class="py-2 px-2 text-left">User</th><th class="py-2 px-2 text-right">Amount</th><th class="py-2 px-2 text-center">Receipt</th><th class="py-2 px-2 text-center">Action</th></tr></thead>
+            <tbody id="adminBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RECEIPTS GALLERY VIEW -->
+      <div id="receiptsView" class="hidden animate-slide-up">
+        <h2 class="text-xl font-bold mb-2"><i class="fas fa-images text-indigo-600 mr-2"></i>All Receipts</h2>
+        <div id="receiptStats" class="flex gap-2 mb-4 flex-wrap"></div>
+        <div id="receiptsGrid" class="grid grid-cols-2 gap-3"></div>
+      </div>
+    </div>
+
+    <!-- RECEIPT MODAL -->
+    <div id="receiptModal" class="hidden fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4" onclick="closeModal()">
+      <div class="max-w-lg w-full max-h-[85vh] bg-white rounded-2xl overflow-auto" onclick="event.stopPropagation()">
+        <div class="sticky top-0 bg-white flex justify-between items-center p-3 border-b">
+          <h3 class="font-bold">Receipt Preview</h3>
+          <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded-full"><i class="fas fa-times"></i></button>
+        </div>
+        <img id="modalImage" class="w-full" alt="Receipt">
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[70] bg-slate-900 text-white px-5 py-3 rounded-full text-sm font-medium shadow-2xl toast-enter"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBHnae2lJXPoaGwD3yC4f0AOTo0osOE00w",
+      authDomain: "power-81d5e.firebaseapp.com",
+      databaseURL: "https://power-81d5e-default-rtdb.firebaseio.com",
+      projectId: "power-81d5e",
+      storageBucket: "power-81d5e.firebasestorage.app",
+      messagingSenderId: "1012873005832",
+      appId: "1:1012873005832:web:596e4fc5232f84d6f93abd"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // State
+    let currentUser = null;
+    let currentUserData = {};
+    let allUsers = {};
+    const SECRET = 'data.simi1';
+    const SETUP_CODE = 'setup123';
+
+    // DOM Cache
+    const $ = (id) => document.getElementById(id);
+    const loader = $('appLoader');
+    const mainApp = $('mainApp');
+    const viewContainer = $('viewContainer');
+
+    // Hide loader
+    function hideLoader() {
+      loader.style.opacity = '0';
+      loader.style.transition = 'opacity 0.3s';
+      setTimeout(() => { loader.style.display = 'none'; mainApp.classList.remove('hidden'); }, 300);
+    }
+
+    // Toast
+    function toast(msg, icon = 'check-circle') {
+      const t = $('toast');
+      t.innerHTML = `<i class="fas fa-${icon} mr-2 text-emerald-400"></i>${msg}`;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2500);
+    }
+
+    // Copy
+    window.copyText = (text) => {
+      navigator.clipboard?.writeText(text).then(() => toast('Copied!')).catch(() => toast('Copy failed', 'exclamation-triangle'));
+    };
+
+    // Modal
+    window.viewReceipt = (base64) => {
+      $('modalImage').src = base64;
+      $('receiptModal').classList.remove('hidden');
+    };
+    window.closeModal = () => $('receiptModal').classList.add('hidden');
+
+    // Mobile Menu
+    window.toggleMobileMenu = () => $('mobileMenu').classList.toggle('hidden');
+
+    // Navigation
+    const views = ['loginView', 'registerView', 'dashboardView', 'historyView', 'adminView', 'receiptsView'];
+    window.navigate = (view) => {
+      const viewMap = {
+        dashboard: 'dashboardView',
+        history: 'historyView',
+        admin: 'adminView',
+        receipts: 'receiptsView',
+        login: 'loginView',
+        register: 'registerView'
+      };
+      const target = viewMap[view] || 'dashboardView';
+      views.forEach(v => {
+        const el = $(v);
+        if (el) el.classList.add('hidden');
+      });
+      const targetEl = $(target);
+      if (targetEl) targetEl.classList.remove('hidden');
+      window.scrollTo(0, 0);
+      
+      // Update bottom nav
+      document.querySelectorAll('.bottom-tab').forEach(btn => {
+        btn.classList.remove('text-indigo-600');
+        btn.classList.add('text-slate-400');
+      });
+      
+      // Load data
+      if (view === 'dashboard') loadDashboard();
+      if (view === 'history') loadHistory();
+      if (view === 'admin') loadAdmin();
+      if (view === 'receipts') loadReceipts();
+    };
+    window.showView = (v) => window.navigate(v);
+
+    // Setup Admin
+    window.makeMeAdmin = async () => {
+      const code = prompt('Enter setup code:');
+      if (code !== SETUP_CODE) return toast('Invalid code', 'times-circle');
+      if (!currentUser) return toast('Login first', 'exclamation-triangle');
+      await update(ref(db, 'users/' + currentUser.uid), { isAdmin: true });
+      toast('Admin activated! Reloading...');
+      setTimeout(() => location.reload(), 1500);
+    };
+
+    // File to Base64
+    const toBase64 = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // Auth
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        $('topNav')?.classList.remove('hidden');
+        $('bottomNav')?.classList.remove('hidden');
+        
+        const snap = await get(ref(db, 'users/' + user.uid));
+        currentUserData = snap.val() || { balance: 0, isAdmin: false, contributions: {} };
+        
+        $('userBadge').textContent = currentUserData.username || user.email?.split('@')[0] || 'User';
+        
+        const isAdmin = currentUserData.isAdmin === true;
+        document.querySelectorAll('.admin-nav').forEach(el => el.classList.toggle('hidden', !isAdmin));
+        $('setupAdminBtn')?.classList.toggle('hidden', isAdmin);
+        
+        navigate('dashboard');
+        hideLoader();
+      } else {
+        currentUser = null;
+        currentUserData = {};
+        $('topNav')?.classList.add('hidden');
+        $('bottomNav')?.classList.add('hidden');
+        navigate('login');
+        hideLoader();
+      }
+    });
+
+    // Fallback hide loader after 5s
+    setTimeout(hideLoader, 5000);
+
+    // Register
+    $('registerForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = $('regName').value.trim();
+      const phone = $('regPhone').value.trim();
+      const email = $('regEmail').value.trim();
+      const pass = $('regPassword').value;
+      const confirm = $('regConfirm').value;
+      if (pass !== confirm) return toast('Passwords mismatch', 'times-circle');
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await set(ref(db, 'users/' + cred.user.uid), {
+          username: name, phone, email,
+          balance: 0, isAdmin: false,
+          createdAt: new Date().toISOString()
+        });
+        toast('Account created!');
+      } catch (err) { toast(err.message, 'exclamation-triangle'); }
+    });
+
+    // Login
+    $('loginForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await signInWithEmailAndPassword(auth, $('loginEmail').value, $('loginPassword').value);
+      } catch (err) { toast(err.message, 'exclamation-triangle'); }
+    });
+
+    // Logout
+    window.handleLogout = () => signOut(auth);
+
+    // Dashboard
+    function loadDashboard() {
+      if (!currentUser) return;
+      onValue(ref(db, 'users'), (snap) => {
+        allUsers = snap.val() || {};
+        renderLeaderboard();
+        renderStats();
+      });
+    }
+
+    function renderStats() {
+      $('dashName').textContent = currentUserData.username || 'User';
+      $('dashPhoneNum').textContent = currentUserData.phone || '';
+      $('dashBalance').textContent = '₦' + (currentUserData.balance || 0).toLocaleString('en-NG', {minimumFractionDigits: 2});
+      $('dashContribs').textContent = Object.keys(currentUserData.contributions || {}).length;
+      const rank = calculateRank();
+      $('dashRank').textContent = rank;
+      $('dashRankSmall').textContent = rank;
+    }
+
+    function calculateRank() {
+      const sorted = Object.values(allUsers).sort((a, b) => (b.balance || 0) - (a.balance || 0));
+      const idx = sorted.findIndex(u => u.email === currentUser?.email);
+      return idx >= 0 ? '#' + (idx + 1) : '-';
+    }
+
+    function renderLeaderboard() {
+      const tbody = $('leaderboardBody');
+      const users = Object.entries(allUsers).map(([id, d]) => ({ id, ...d }))
+        .sort((a, b) => (b.balance || 0) - (a.balance || 0));
+      tbody.innerHTML = users.map((u, i) => `
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-2 font-bold ${i < 3 ? 'text-amber-500' : 'text-slate-400'}">${i+1}</td>
+          <td class="py-3 px-2 font-medium">${u.username || 'N/A'}</td>
+          <td class="py-3 px-2 text-right font-semibold text-emerald-600">₦${(u.balance||0).toLocaleString()}</td>
+          <td class="py-3 px-2 text-right text-xs text-slate-400">${Object.keys(u.contributions||{}).length}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Contribution
+    $('contribForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return toast('Login required', 'exclamation-triangle');
+      const name = $('contribName').value.trim();
+      const phone = $('contribPhone').value.trim();
+      const amount = parseFloat($('contribAmount').value);
+      const file = $('contribReceipt').files[0];
+      if (!file) return toast('Upload receipt', 'exclamation-triangle');
+      if (amount <= 0) return toast('Invalid amount', 'exclamation-triangle');
+      
+      const base64 = await toBase64(file);
+      const data = {
+        username: name, phone, amount,
+        receiptBase64: base64,
+        receiptName: file.name,
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+        userId: currentUser.uid,
+        userEmail: currentUser.email
+      };
+      
+      const pendingRef = push(ref(db, 'pendingContributions'));
+      await set(pendingRef, data);
+      const contribRef = push(ref(db, 'users/' + currentUser.uid + '/contributions'));
+      await set(contribRef, { ...data, pendingId: pendingRef.key });
+      
+      toast('Contribution submitted!');
+      $('contribForm').reset();
+      $('receiptPreview').classList.add('hidden');
+    });
+
+    $('contribReceipt')?.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const base64 = await toBase64(file);
+        $('receiptPreview').src = base64;
+        $('receiptPreview').classList.remove('hidden');
+      }
+    });
+
+    // History
+    function loadHistory() {
+      if (!currentUser) return;
+      onValue(ref(db, 'users/' + currentUser.uid + '/contributions'), (snap) => {
+        const data = snap.val() || {};
+        const entries = Object.entries(data).map(([id, d]) => ({ id, ...d }))
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const tbody = $('historyBody');
+        if (!entries.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">No contributions yet</td></tr>';
+          return;
+        }
+        tbody.innerHTML = entries.map(c => `
+          <tr class="border-b border-slate-100">
+            <td class="py-2 px-2 text-xs">${new Date(c.timestamp).toLocaleDateString()}</td>
+            <td class="py-2 px-2 font-medium text-sm">${c.username}</td>
+            <td class="py-2 px-2 text-right font-semibold text-emerald-600">₦${c.amount.toLocaleString()}</td>
+            <td class="py-2 px-2 text-center"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${c.status==='approved'?'bg-emerald-100 text-emerald-700':c.status==='rejected'?'bg-red-100 text-red-700':'bg-amber-100 text-amber-700'}">${c.status||'pending'}</span></td>
+            <td class="py-2 px-2 text-center"><button onclick="viewReceipt('${c.receiptBase64}')" class="text-indigo-600"><i class="fas fa-image"></i></button></td>
+          </tr>
+        `).join('');
+      });
+    }
+
+    // Admin
+    function loadAdmin() {
+      if (!currentUserData?.isAdmin) return navigate('dashboard');
+      onValue(ref(db, 'pendingContributions'), (snap) => {
+        const all = snap.val() || {};
+        const pending = Object.entries(all).map(([id, d]) => ({ id, ...d })).filter(p => p.status === 'pending');
+        $('pendingBadge').textContent = pending.length;
+        const tbody = $('adminBody');
+        if (!pending.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-400">All clear!</td></tr>';
+          return;
+        }
+        tbody.innerHTML = pending.map(p => `
+          <tr class="border-b border-slate-100">
+            <td class="py-2 px-2 text-xs">${new Date(p.timestamp).toLocaleDateString()}</td>
+            <td class="py-2 px-2 font-medium">${p.username}</td>
+            <td class="py-2 px-2 text-right font-semibold">₦${p.amount.toLocaleString()}</td>
+            <td class="py-2 px-2 text-center"><button onclick="viewReceipt('${p.receiptBase64}')" class="text-blue-600"><i class="fas fa-image"></i></button></td>
+            <td class="py-2 px-2">
+              <div class="flex gap-1 justify-center">
+                <button onclick="approveContribution('${p.id}','${p.userId}',${p.amount})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded text-xs">✓</button>
+                <button onclick="rejectContribution('${p.id}','${p.userId}')" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">✗</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      });
+    }
+
+    // Receipts Gallery
+    function loadReceipts() {
+      if (!currentUserData?.isAdmin) return navigate('dashboard');
+      onValue(ref(db, 'pendingContributions'), (snap) => {
+        const all = snap.val() || {};
+        const list = Object.entries(all).map(([id, d]) => ({ id, ...d })).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        $('receiptStats').innerHTML = `
+          <span class="bg-slate-100 px-2 py-1 rounded-full text-xs">📄 ${list.length}</span>
+          <span class="bg-amber-100 px-2 py-1 rounded-full text-xs">⏳ ${list.filter(r=>r.status==='pending').length}</span>
+          <span class="bg-emerald-100 px-2 py-1 rounded-full text-xs">✅ ${list.filter(r=>r.status==='approved').length}</span>
+          <span class="bg-red-100 px-2 py-1 rounded-full text-xs">❌ ${list.filter(r=>r.status==='rejected').length}</span>
+        `;
+        const grid = $('receiptsGrid');
+        if (!list.length) { grid.innerHTML = '<div class="col-span-2 text-center py-10 text-slate-400">No receipts</div>'; return; }
+        grid.innerHTML = list.map(r => `
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+            <img src="${r.receiptBase64}" class="w-full h-32 object-cover cursor-pointer" onclick="viewReceipt('${r.receiptBase64}')" loading="lazy">
+            <div class="p-2.5">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-xs">${r.username}</span>
+                <span class="font-bold text-xs text-emerald-600">₦${r.amount.toLocaleString()}</span>
+              </div>
+              <span class="inline-block mt-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${r.status==='approved'?'bg-emerald-100 text-emerald-700':r.status==='rejected'?'bg-red-100 text-red-700':'bg-amber-100 text-amber-700'}">${r.status||'pending'}</span>
+              ${r.status==='pending' ? `
+              <div class="flex gap-1.5 mt-2">
+                <button onclick="approveContribution('${r.id}','${r.userId}',${r.amount})" class="flex-1 bg-emerald-500 text-white py-1 rounded text-[10px]">Approve</button>
+                <button onclick="rejectContribution('${r.id}','${r.userId}')" class="flex-1 bg-red-500 text-white py-1 rounded text-[10px]">Reject</button>
+              </div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      });
+    }
+
+    // Approve/Reject
+    window.approveContribution = async (id, uid, amount) => {
+      const code = prompt('Admin secret:');
+      if (code !== SECRET) return toast('Invalid code', 'times-circle');
+      await update(ref(db, 'pendingContributions/' + id), { status: 'approved' });
+      const userSnap = await get(ref(db, 'users/' + uid + '/contributions'));
+      const contribs = userSnap.val() || {};
+      for (let [k, v] of Object.entries(contribs)) {
+        if (v.pendingId === id) { await update(ref(db, `users/${uid}/contributions/${k}`), { status: 'approved' }); break; }
+      }
+      const snap = await get(ref(db, 'users/' + uid));
+      await update(ref(db, 'users/' + uid), { balance: (snap.val()?.balance || 0) + amount });
+      toast('Approved ₦' + amount.toLocaleString());
+    };
+
+    window.rejectContribution = async (id, uid) => {
+      const code = prompt('Admin secret:');
+      if (code !== SECRET) return toast('Invalid code', 'times-circle');
+      await update(ref(db, 'pendingContributions/' + id), { status: 'rejected' });
+      const userSnap = await get(ref(db, 'users/' + uid + '/contributions'));
+      const contribs = userSnap.val() || {};
+      for (let [k, v] of Object.entries(contribs)) {
+        if (v.pendingId === id) { await update(ref(db, `users/${uid}/contributions/${k}`), { status: 'rejected' }); break; }
+      }
+      toast('Rejected');
+    };
+  </script>
+</body>
+</html>
